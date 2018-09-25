@@ -39,34 +39,55 @@ namespace ExceptionSorter
 
         private void preBtn_Click(object sender, EventArgs e)
         {
-
             lWindow.Items.Clear();
+            #region old foreach loop
+            //foreach (var s in fileNames)
+            //{
+            //    if (s.Contains(".pdf")) { pdfCount++; }
+            //    if (s.Contains(".tif")) { tifCount++; }
+
+            //    loopCount++;
+            //    int arrCount = fileNames.Count();
+
+            //    if (prac == null)
+            //    {
+            //        fileCount = 1;
+            //        prac = s.Substring(24, 3);
+            //    }
+            //    else if (s.Substring(24, 3) != prac)
+            //    {
+            //        lWindow.Items.Add(prac + " has " + fileCount + " file(s) to sort.");
+            //        prac = s.Substring(24, 3);
+            //        fileCount = 1;
+            //        if (loopCount==arrCount) { lWindow.Items.Add(prac + " has " + fileCount + " file(s) to sort."); }
+            //    }
+            //    else
+            //    {
+            //        fileCount++;
+            //        if (loopCount == arrCount) { lWindow.Items.Add(prac + " has " + fileCount + " file(s) to sort."); }
+            //    }
+            //}
+            #endregion
+            var praclist = fileNames.GroupBy(x => x.Substring(24, 3))
+                .Select(y => new { Prefix = y.Key, Count = y.Count() });
+            foreach (var p in praclist)
+            {
+                lWindow.Items.Add("Practice: " + p.Prefix +"   has   "+ p.Count +"  files.");
+            }
+
             foreach (var s in fileNames)
             {
-                if (s.Contains(".pdf")) { pdfCount++; }
-                if (s.Contains(".tif")) { tifCount++; }
+                if (s.Contains(".pdf"))
+                {
+                    pdfCount++;
+                }
 
-                loopCount++;
-                int arrCount = fileNames.Count();
-                
-                if (prac == null)
+                if (s.Contains(".tif"))
                 {
-                    fileCount = 1;
-                    prac = s.Substring(24, 3);
-                }
-                else if (s.Substring(24, 3) != prac)
-                {
-                    lWindow.Items.Add(prac + " has " + fileCount + " file(s) to sort.");
-                    prac = s.Substring(24, 3);
-                    fileCount = 1;
-                    if (loopCount==arrCount) { lWindow.Items.Add(prac + " has " + fileCount + " file(s) to sort."); }
-                }
-                else
-                {
-                    fileCount++;
-                    if (loopCount == arrCount) { lWindow.Items.Add(prac + " has " + fileCount + " file(s) to sort."); }
+                    tifCount++;
                 }
             }
+            lWindow.Items.Add("");
             lWindow.Items.Add("There are " + pdfCount + " pdfs.");
             lWindow.Items.Add("There are " + tifCount + " tifs.");
         }

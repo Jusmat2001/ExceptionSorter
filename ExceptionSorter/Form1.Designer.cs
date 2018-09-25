@@ -36,7 +36,7 @@
             // lWindow
             // 
             this.lWindow.BackColor = System.Drawing.SystemColors.Control;
-            this.lWindow.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lWindow.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lWindow.Location = new System.Drawing.Point(12, 12);
             this.lWindow.Name = "lWindow";
             this.lWindow.Size = new System.Drawing.Size(525, 268);
@@ -60,7 +60,7 @@
             this.sortBtn.Name = "sortBtn";
             this.sortBtn.Size = new System.Drawing.Size(100, 30);
             this.sortBtn.TabIndex = 2;
-            this.sortBtn.Text = "Sort";
+            this.sortBtn.Text = "Tiff and File";
             this.sortBtn.UseVisualStyleBackColor = true;
             // 
             // Form1

@@ -31,6 +31,7 @@
             this.lWindow = new System.Windows.Forms.ListView();
             this.preBtn = new System.Windows.Forms.Button();
             this.sortBtn = new System.Windows.Forms.Button();
+            this.statStrip = new System.Windows.Forms.StatusStrip();
             this.SuspendLayout();
             // 
             // lWindow
@@ -63,18 +64,29 @@
             this.sortBtn.Text = "Tiff and File";
             this.sortBtn.UseVisualStyleBackColor = true;
             // 
+            // statStrip
+            // 
+            this.statStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.statStrip.Location = new System.Drawing.Point(0, 356);
+            this.statStrip.Name = "statStrip";
+            this.statStrip.Size = new System.Drawing.Size(549, 24);
+            this.statStrip.TabIndex = 3;
+            this.statStrip.Text = "statusStrip1";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             this.ClientSize = new System.Drawing.Size(549, 380);
+            this.Controls.Add(this.statStrip);
             this.Controls.Add(this.sortBtn);
             this.Controls.Add(this.preBtn);
             this.Controls.Add(this.lWindow);
             this.Name = "Form1";
             this.Text = "Exception Sorter";
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -83,6 +95,7 @@
         private System.Windows.Forms.ListView lWindow;
         private System.Windows.Forms.Button preBtn;
         private System.Windows.Forms.Button sortBtn;
+        private System.Windows.Forms.StatusStrip statStrip;
     }
 }
 

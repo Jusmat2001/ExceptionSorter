@@ -9,11 +9,14 @@ namespace ExceptionSorter
 {
     public class ListOfFiles
     {
-        //public void LoadWindow()
-        //{
-        //    fileNames = Directory.EnumerateFiles(fileLoc, "*.*", SearchOption.AllDirectories)
-        //        .Where(s => s.EndsWith(".pdf") || s.EndsWith(".tif"));
-        //    lWindow.Items.Add("There are " + fileNames.Count() + " files to sort in " + fileLoc);
-        //}
+        public IEnumerable<string> LoadFiles(string fileLoc)
+        {
+            var fileNames = Directory.EnumerateFiles(fileLoc, "*.*", SearchOption.AllDirectories)
+                .Where(s => s.EndsWith(".pdf") || s.EndsWith(".tif"));
+            return fileNames;
+        }
+
+        
+
     }
 }

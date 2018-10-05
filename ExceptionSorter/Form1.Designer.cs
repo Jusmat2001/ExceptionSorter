@@ -29,9 +29,10 @@
         private void InitializeComponent()
         {
             this.lWindow = new System.Windows.Forms.ListView();
-            this.preBtn = new System.Windows.Forms.Button();
-            this.sortBtn = new System.Windows.Forms.Button();
+            this.loadBtn = new System.Windows.Forms.Button();
+            this.tiffBtn = new System.Windows.Forms.Button();
             this.statStrip = new System.Windows.Forms.StatusStrip();
+            this.fileBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lWindow
@@ -45,33 +46,48 @@
             this.lWindow.UseCompatibleStateImageBehavior = false;
             this.lWindow.View = System.Windows.Forms.View.List;
             // 
-            // preBtn
+            // loadBtn
             // 
-            this.preBtn.Location = new System.Drawing.Point(12, 286);
-            this.preBtn.Name = "preBtn";
-            this.preBtn.Size = new System.Drawing.Size(100, 30);
-            this.preBtn.TabIndex = 1;
-            this.preBtn.Text = "Preview Files";
-            this.preBtn.UseVisualStyleBackColor = true;
-            this.preBtn.Click += new System.EventHandler(this.preBtn_Click);
+            this.loadBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(253)))), ((int)(((byte)(179)))), ((int)(((byte)(157)))));
+            this.loadBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.loadBtn.Location = new System.Drawing.Point(12, 286);
+            this.loadBtn.Name = "loadBtn";
+            this.loadBtn.Size = new System.Drawing.Size(114, 30);
+            this.loadBtn.TabIndex = 1;
+            this.loadBtn.Text = "Load (Ready)";
+            this.loadBtn.UseVisualStyleBackColor = false;
+            this.loadBtn.Click += new System.EventHandler(this.preBtn_Click);
             // 
-            // sortBtn
+            // tiffBtn
             // 
-            this.sortBtn.Location = new System.Drawing.Point(165, 286);
-            this.sortBtn.Name = "sortBtn";
-            this.sortBtn.Size = new System.Drawing.Size(100, 30);
-            this.sortBtn.TabIndex = 2;
-            this.sortBtn.Text = "Tiff and File";
-            this.sortBtn.UseVisualStyleBackColor = true;
+            this.tiffBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(254)))), ((int)(((byte)(201)))));
+            this.tiffBtn.Location = new System.Drawing.Point(214, 286);
+            this.tiffBtn.Name = "tiffBtn";
+            this.tiffBtn.Size = new System.Drawing.Size(114, 30);
+            this.tiffBtn.TabIndex = 2;
+            this.tiffBtn.Text = "Tiff   (Set)";
+            this.tiffBtn.UseVisualStyleBackColor = false;
+            this.tiffBtn.Click += new System.EventHandler(this.sortBtn_Click);
             // 
             // statStrip
             // 
             this.statStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.statStrip.Location = new System.Drawing.Point(0, 356);
+            this.statStrip.Location = new System.Drawing.Point(0, 358);
             this.statStrip.Name = "statStrip";
-            this.statStrip.Size = new System.Drawing.Size(549, 24);
+            this.statStrip.Size = new System.Drawing.Size(549, 22);
             this.statStrip.TabIndex = 3;
             this.statStrip.Text = "statusStrip1";
+            // 
+            // fileBtn
+            // 
+            this.fileBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(214)))), ((int)(((byte)(254)))), ((int)(((byte)(203)))));
+            this.fileBtn.Location = new System.Drawing.Point(426, 286);
+            this.fileBtn.Name = "fileBtn";
+            this.fileBtn.Size = new System.Drawing.Size(111, 30);
+            this.fileBtn.TabIndex = 4;
+            this.fileBtn.Text = "File  (Go)";
+            this.fileBtn.UseVisualStyleBackColor = false;
+            this.fileBtn.Click += new System.EventHandler(this.fileBtn_Click);
             // 
             // Form1
             // 
@@ -79,9 +95,10 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             this.ClientSize = new System.Drawing.Size(549, 380);
+            this.Controls.Add(this.fileBtn);
             this.Controls.Add(this.statStrip);
-            this.Controls.Add(this.sortBtn);
-            this.Controls.Add(this.preBtn);
+            this.Controls.Add(this.tiffBtn);
+            this.Controls.Add(this.loadBtn);
             this.Controls.Add(this.lWindow);
             this.Name = "Form1";
             this.Text = "Exception Sorter";
@@ -93,9 +110,10 @@
         #endregion
 
         private System.Windows.Forms.ListView lWindow;
-        private System.Windows.Forms.Button preBtn;
-        private System.Windows.Forms.Button sortBtn;
+        private System.Windows.Forms.Button loadBtn;
+        private System.Windows.Forms.Button tiffBtn;
         private System.Windows.Forms.StatusStrip statStrip;
+        private System.Windows.Forms.Button fileBtn;
     }
 }
 

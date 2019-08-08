@@ -22,13 +22,13 @@ namespace ExceptionSorter
         static string fileLocIn = @"C:\Users\jmatlock\Desktop\input";
         static string fileLocOut = @"C:\Users\jmatlock\Desktop\tif output";
         IEnumerable<string> fileNames = new string[0];
-        public int tifCount, pdfCount;
+        public int tifCount, pdfCount, startFileCount;
         ListOfFiles exceptionList = new ListOfFiles();
         ListOfFiles tifList = new ListOfFiles();
-        PdfToTifHandler handler = new PdfToTifHandler();
-        private int startFileCount;
-        Gsc gsc = new Gsc();
-        GhostscriptVersionInfo gsVersionInfo = GhostscriptVersionInfo.GetLastInstalledVersion(GhostscriptLicense.GPL | GhostscriptLicense.AFPL, GhostscriptLicense.GPL);
+        //PdfToTifHandler handler = new PdfToTifHandler();
+        
+        //Gsc gsc = new Gsc();
+        //GhostscriptVersionInfo gsVersionInfo = GhostscriptVersionInfo.GetLastInstalledVersion(GhostscriptLicense.GPL | GhostscriptLicense.AFPL, GhostscriptLicense.GPL);
 
 
         public Form1()
@@ -60,7 +60,7 @@ namespace ExceptionSorter
                 foreach (var f in tifList)
                 {
                     var fileName = Path.GetFileNameWithoutExtension(f);
-                    gsc.ConverttoTif(f, fileLocOut, fileName);
+                    //gsc.ConverttoTif(f, fileLocOut, fileName);
                     
                     //statStrip.Text = "Processing file: " + f;
                     //if (File.Exists(oN)) { File.Delete(f);}

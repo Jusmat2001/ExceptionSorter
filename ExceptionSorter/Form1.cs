@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ExceptionSorter.Properties;
+using Ghostscript.NET;
 using Microsoft.Office.Interop.Word;
 
 
@@ -27,7 +28,8 @@ namespace ExceptionSorter
         PdfToTifHandler handler = new PdfToTifHandler();
         private int startFileCount;
         Gsc gsc = new Gsc();
-        
+        GhostscriptVersionInfo gsVersionInfo = GhostscriptVersionInfo.GetLastInstalledVersion(GhostscriptLicense.GPL | GhostscriptLicense.AFPL, GhostscriptLicense.GPL);
+
 
         public Form1()
         {
@@ -46,6 +48,9 @@ namespace ExceptionSorter
             lWindow.Items.Add("There are " + tifCount + " tifs.");
         }
 
+
+
+
         private void sortBtn_Click(object sender, EventArgs e)
         {
             tiffBtn.BackColor = Color.DimGray;
@@ -54,11 +59,11 @@ namespace ExceptionSorter
                 var tifList = from f in fileNames where f.Contains(".pdf") select f;
                 foreach (var f in tifList)
                 {
-                    string oN = Path.GetFileName(f);
-                    string outName = oN.Remove(oN.Length - 4);
-                    gsc.PdfToJpg(f, fileLocOut);
-                    statStrip.Text = "Processing file: " + f;
-                    if (File.Exists(oN)) { File.Delete(f);}
+                    var fileName = Path.GetFileNameWithoutExtension(f);
+                    gsc.ConverttoTif(f, fileLocOut, fileName);
+                    
+                    //statStrip.Text = "Processing file: " + f;
+                    //if (File.Exists(oN)) { File.Delete(f);}
                 }
             }
             catch (Exception ex)
@@ -72,10 +77,16 @@ namespace ExceptionSorter
             statStrip.Text = "Finished Tiffing. Starting file count = " + startFileCount+" Post Tiff file count = " + LTifCount;
         }
 
+
+
+
         private void fileBtn_Click(object sender, EventArgs e)
         {
             fileBtn.BackColor = Color.DimGray;
         }
+
+
+
 
         private void preBtn_Click(object sender, EventArgs e)
         {

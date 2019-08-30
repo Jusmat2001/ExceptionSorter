@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<CodeOneConfig>
+	<DBServer>SQL1\SQL2005</DBServer>
+	<DBName>CodeoneMaster</DBName>
+	<UID>Codeone</UID>
+	<ToDir>File1\UnNumbered</ToDir>
+	<Sel>FC0d*On*1</Sel>
+</CodeOneConfig>
+

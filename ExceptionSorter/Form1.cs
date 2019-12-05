@@ -8,10 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using PNSrv10Lib;
-using Microsoft.Office.Interop.Word;
+//using Microsoft.Office.Interop.Word;
 using System.Diagnostics;
 using System.Threading;
+
 
 namespace ExceptionSorter
 {
@@ -19,106 +19,218 @@ namespace ExceptionSorter
     public partial class Form1 : Form
     {
         static string sFileInputLoc = @"C:\Users\jmatlock\Desktop\input\";
-        IEnumerable<string> ienFileNames = new string[0];
         public int iTifCount, iPdfCount;
-        ListOfFiles lofExceptionList = new ListOfFiles();
-        //private Object LockObject = new Object();
-        //private Object UploadLock = new Object();
         public clsSQL oSQL;
         public clsConfig oConfig;
         public const string XML_CONFIG_FILE = "ImagePrint.xml";
         Guid gNew = new Guid();
         string[] sPracticeGuid = new String[100];
+        string[] sPracticeList = new String[100];
         string sPracticeGuidID = "";
         string sFileNameTif = "";
-        DirectoryInfo dirImage;
-        FileInfo[] fiFiles;
+        public static DirectoryInfo di;
+        FileInfo[] fi;
         string sPractice = "";
+        public static string sLogPath = @"C:\CodeOne\ExceptionSorterLog\";
         
-
 
         public Form1()
         {
             InitializeComponent();
             oConfig = new clsConfig(XML_CONFIG_FILE);
             oSQL = new clsSQL(oConfig);
+            di = new DirectoryInfo(sFileInputLoc);
 
-            ienFileNames = lofExceptionList.LoadFiles(sFileInputLoc);
-            lWindow.Items.Add("There are " + ienFileNames.Count() + " files to sort in " + sFileInputLoc);
-            foreach (var s in ienFileNames)
+            fi = di.GetFiles();
+            lWindow.Items.Add("There are " + fi.Count() + " files to sort in " + sFileInputLoc);
+            writeLog("******There are " + fi.Count() + " files to sort in " + sFileInputLoc, 0);
+            foreach (var s in fi)
             {
-                if (s.Contains(".pdf")) { iPdfCount++; }
-                if (s.Contains(".tif")) { iTifCount++; }
+                if (s.Name.Contains(".pdf")) { iPdfCount++; }
+                if (s.Name.Contains(".tif")) { iTifCount++; }
             }
             lWindow.Items.Add("");
             lWindow.Items.Add("There are " + iPdfCount + " pdfs.");
             lWindow.Items.Add("There are " + iTifCount + " tifs.");
         }
 
-        
-
         private void bPreviewFileBtn_Click(object sender, EventArgs e)
         {
+            fi = di.GetFiles();
             lWindow.Items.Clear();
-
-            var praclist = ienFileNames.GroupBy(x => x.Substring(24, 3))
-                        .Select(y => new { Prefix = y.Key, Count = y.Count() });
-            foreach (var p in praclist)
+            var groups = from f in fi
+                         group f by f.Name.Substring(0, 3) into g
+                         select new { prac = g.Key, Count = g.Count() }; 
+            foreach (var g in groups)
             {
-                lWindow.Items.Add("Practice: " + p.Prefix + "   has   " + p.Count + "  file(s).");
+                lWindow.Items.Add("Practice: " + g.prac + "   has   " + g.Count + "  file(s).");
+                //writeLog("Practice: " + g.prac + "   has   " + g.Count + "  file(s).",0);
+            }
+        }
+
+        private void bPdfToTifBtn_Click(object sender, EventArgs e) 
+        {
+            var iConversionCount =0;
+            var files = di.GetFiles("*.pdf");
+            if (files.Count() > 0)
+            {
+                try
+                {
+                    foreach (var f in files)
+                    {
+                        string input = f.FullName.ToString();
+                        string output = input.Replace("pdf", "tif");
+                        if (PdfToJpg(input, output))
+                        {
+                            iConversionCount++;
+                            continue;
+                        }
+                        else
+                        { break; }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    writeLog("Error in PDF conversion: Error= " + ex.Message, 2);
+                }
+            }
+            else { MessageBox.Show("No pdf files found to convert."); }
+            
+            slStatusLabel.Text = "Files converted to PDF: " + iConversionCount;
+            writeLog("Files converted: " + iConversionCount, 0);
+            statStrip.Update();
+            foreach (var f in files)
+            {
+                if (File.Exists(f.FullName)) { File.Delete(f.FullName.ToString()); }
+                else { MessageBox.Show("File not Found."); }
+            }
+        }
+
+        private bool PdfToJpg(string inputPDFFile, string outputImagesPath)
+        {
+            if (!Directory.GetFiles(sFileInputLoc).Contains(outputImagesPath))
+            {
+                try
+                {
+                    string ghostScriptPath = @"C:\Program Files (x86)\gs\gs9.50\bin\gswin64c.exe";
+                    String ars = "-sDEVICE=tiffg4 -o " + outputImagesPath + " " + inputPDFFile;
+
+                    Process proc = new Process();
+                    proc.StartInfo.FileName = ghostScriptPath;
+                    proc.StartInfo.Arguments = ars;
+                    proc.StartInfo.CreateNoWindow = true;
+                    proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                    proc.Start();
+                    proc.WaitForExit();
+                    if (Directory.GetFiles(sFileInputLoc).Contains(outputImagesPath))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        MessageBox.Show(outputImagesPath + "was not detected after conversion.");
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return false;
+                }
+            }
+            else
+            {
+                MessageBox.Show("File " + outputImagesPath + " already exists.");
+                return false;
             }
         }
 
         private void bFileTifBtn_Click(object sender, EventArgs e)
         {
-            lWindow.Clear();
-            dirImage = new DirectoryInfo(sFileInputLoc);
-            fiFiles = dirImage.GetFiles(".tif");
-            //foreach  set sfilenametif, then filetifs()
-            if (fiFiles.Length<1) { MessageBox.Show("No files to sort."); return; }
-            for (int i =0; i <fiFiles.Length; i++)
-            {
-                sFileNameTif = fiFiles[i].FullName;
-                lWindow.Items.Add("Processing " + sFileNameTif);
-                FileTifs(sFileNameTif);
-                Thread.Sleep(45000);
-
-            }
-
-            
-        }
-
-        private void FileTifs(string sFileNameTif)
-        {
-            statStrip.Text = "Processing File " + sFileNameTif;
             try
             {
-                if (sFileNameTif == "") { return; }
-                sPractice = sFileNameTif.Substring(0, 3);
+                lWindow.Clear();
+                DataTable dtPractices = oSQL.GetPracticeList();
+                if (dtPractices != null)
+                {
+                    Int32 i = 0;
+                    foreach (DataRow drPractices in dtPractices.Rows)
+                    {
+                        sPracticeGuid[i] = drPractices["ID"].ToString();
+                        sPracticeList[i] = drPractices["PracticeIdentifier"].ToString();
+                        i++;
+                    }
+                }
+
+                FileInfo[] fiTifFiles = di.GetFiles("*.tif");
+                
+                if (fiTifFiles.Length < 1) { MessageBox.Show("No files to sort."); return; }
+                foreach (var tifFile in fiTifFiles)
+                {
+                    sFileNameTif = tifFile.FullName;
+                    lWindow.Items.Add("Processing " + tifFile.Name);
+                    writeLog("---------------------------------------------", 0);
+                    writeLog("Original File: " + tifFile.Name,0);
+                    //if first 3 of filename are NOT in practiceList, move file to desktop folder for manual processing
+                    sPractice = tifFile.Name.Substring(0, 3);
+                    if (!sPracticeList.Contains(sPractice))
+                    {
+                        string sDate = DateTime.Now.ToString("MM-dd-yyy");
+                        var sPath = @"C:\Users\jmatlock\Desktop\" + sDate +" Sorter Exceptions";
+                        var sDestFilename = sPath + "\\"+ tifFile.Name;
+                        Directory.CreateDirectory(sPath);
+                        File.Move(sFileNameTif, sDestFilename);
+                        writeLog("Practice not found. " + sFileNameTif + " moved to " + sPath,1);
+                    }
+                    FileTifs(tifFile);
+                    Thread.Sleep(20000);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void FileTifs(FileInfo tifFile)
+        {
+            slStatusLabel.Text = "Processing File " + sFileNameTif;
+            
+            statStrip.Update();
+            try
+            {
+                if (tifFile.Name == "") { return; }
+                
+                int iIndex = Array.FindIndex(sPracticeList, row => row.Contains(sPractice));
+                sPracticeGuidID = sPracticeGuid[iIndex];
                 gNew = Guid.NewGuid();
                 string sNewFileName = sFileInputLoc + gNew + "_VS3.tif";
+                writeLog("To File Name: " + sNewFileName, 0);
                 File.Move(sFileNameTif, sNewFileName);
                 sFileNameTif = sNewFileName;
-                //     sFileNameTif = "C:\\CodeOne\\ImagePrint\\2ccd1993-6733-465a-9d1a-027057fbf0fd_VS3.tif"
-                FileInfo originalFileInfo = new FileInfo(sFileNameTif);
-                string sUnNumberedshare = "\\C:\\Users\\jmatlock\\Desktop\\tif output";
-                    
-                //    string.Format("\\\\{0}", oConfig.sToDir);
+                //sFileNameTif = "C:\\CodeOne\\ImagePrint\\2ccd1993-6733-465a-9d1a-027057fbf0fd_VS3.tif"
 
+                string sUnNumberedshare = "C:\\Users\\jmatlock\\Desktop\\tif_output";
+                //                        string.Format("\\\\{0}", oConfig.sToDir);
                 //     sUnnumberedshare = \\file1\Unnumbered
+
                 string sUnNumberedName = string.Format("{0}\\{1}", sUnNumberedshare, Path.GetFileName(sFileNameTif));
                 //     sUnNumberedName = "\\\\File1\\Unnumbered\\2ccd1993-6733-465a-9d1a-027057fbf0fd_VS3.tif"
+
                 //Int32 iRet = oSQL.doInsertTiffReq(sPracticeGuidID, "", sPractice, Path.GetFileName(sFileNameTif));
                 //if (iRet != 0)
                 //{ //if we don't insert tif, dont move file. Unnumbered will loop looking for row.
+                //    writeLog("Error Inserting Tiff Request, Error = " + oSQL.sError, 2);
                 //    File.Delete(sFileNameTif);
                 //    MessageBox.Show("Error Inserting Tif ID into Item Table, Error = " + oSQL.sError, "Error Creating Item Entry", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 //    return; 
                 //}
-                MessageBox.Show("sPracticeGuidID = " + sPracticeGuidID + "/nsPractice = " + sPractice + "/nGetfilename = " + Path.GetFileName(sFileNameTif));
-                File.Move(sFileNameTif, sUnNumberedName);
-                File.Delete(sFileNameTif);
 
+                File.Move(sFileNameTif, sUnNumberedName);
+                writeLog("File Moved Successfully.", 0);
+
+                File.Delete(sFileNameTif);
 
 
             }
@@ -130,167 +242,43 @@ namespace ExceptionSorter
             }
         }
 
-
-        //private void ConvertFile(String strFile)
-        //{
-        //    PNSession session = new PNSession();
-        //    IPNPrintSession documentPrintSession = null;
-        //    //Word.Application oWordApp = new Word.Application();
-        //    //WordApp._Document oDoc = null;
-        //    object myTrue = true,
-        //    filename = strFile,
-        //    optMissing = System.Type.Missing;
-        //    bool bCompleted, bDocSpooling = false;
-        //    int maxSpoolingWait = 0, currentSpoolingWait = 0;
-        //    int maxCompleted = 0, currentCompletedWait = 0;
-
-        //    // STEP 1: Initialize an IPNSession object
-        //    session.SetSessionPrinter("TIFF Image Printer 10.0", 2, null, false);
-
-        //    // STEP 2: Set the print job properties
-        //    session.SetSaveOptions(@"C:\Users\jmatlock\Desktop\tif output", null, pnOutputFileFormat.pnOutputFileFormatTIFFSerialized, true,
-        //            pnColorReduction.pnColorReductionBlackAndWhite, pnDitheringMethod.pnDitheringNone, false, false, true, true, true, false);
-
-        //    // Use G4 compression for black and white images
-        //    session.SetTIFFCompressionOptions(pnColorCompressionMethod.pnColorCompressionLZW,
-        //    pnIndexedCompressionMethod.pnIndexedCompressionLZW,
-        //    pnGreyscaleCompressionMethod.pnGreyscaleCompressionLZW,
-        //    pnBWCompressionMethod.pnBWCompressionGroup4);
-        //    // open the document
-
-        //    var oDoc = Documents.Open(ref filename, ref optMissing, ref optMissing,
-        //    ref optMissing, ref optMissing, ref optMissing,
-        //    ref optMissing, ref optMissing, ref optMissing,
-        //    ref optMissing, ref optMissing, ref optMissing,
-        //    ref optMissing, ref optMissing, ref optMissing,
-        //    ref optMissing);
-
-        //    // STEP 3: Get an IPNPrintSession object for this document
-        //    documentPrintSession = null;
-        //    while (documentPrintSession == null)
-        //    {
-        //        try
-        //        {
-        //            // Get a new print session for this document with:
-        //            //
-        //            // int Timeout
-        //            // 5 second timeout for an available printSession to be returned
-        //            // int FirstJobTimeout
-        //            // 1 minute max timeout for a job to appear in the queue before
-        //            // releasing the printer back to the pool; applies only after
-        //            // the printSession has been released
-        //            // int AvailableTimeout
-        //            // 1/4 second timeout waiting between jobs entering the queue.
-        //            // If a new job is not seen in the print queue in the timeout
-        //            // period, the printer is released back into the printer pool.
-        //            // int OptionFlags
-        //            // reserved for future use
-        //            documentPrintSession = session.NewPrintSessionEx(5000, 60000, 250, 0);
-        //            // Alternate call - not as customizable.
-        //            // Wait max 5 seconds for an available printer
-        //            // Wait max 2 seconds for another print job to appearing the queue
-        //            // documentPrintSession = Session.NewPrintSession(5000, 2000)
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            MessageBox.Show("Exception on NewPrintSessionEx (" + ex.Message + ")");
-        //            break;
-        //        }
-        //    }
-
-        //    // STEP 4: Print the document to the IPNPrintSession printer
-        //    if (documentPrintSession != null)
-        //    {
-        //        // Set active printer with FilePrintSetup, .ActivePrinter is not thread-safe
-        //        object oWordbasic = oWordApp.WordBasic;
-        //        object[] argValues = new object[] { documentPrintSession.PrinterName, 1 };
-        //        String[] argNames = new String[] { "Printer", "DoNotSetAsSysDefault" };
-        //        oWordbasic.GetType().InvokeMember("FilePrintSetup",
-        //        System.Reflection.BindingFlags.InvokeMethod,
-        //        null, oWordbasic, argValues, null, null, argNames);
-        //        // print in the background
-        //        oDoc.PrintOut(ref myTrue, ref optMissing, ref optMissing, ref optMissing,
-        //        ref optMissing, ref optMissing, ref optMissing, ref optMissing,
-        //        ref optMissing, ref optMissing, ref optMissing, ref optMissing,
-        //        ref optMissing, ref optMissing, ref optMissing, ref optMissing,
-        //        ref optMissing, ref optMissing);
-        //        // STEP 5: Synchronize with file creation
-        //        // Test that file made it to the printer. We are using a maximum wait time of
-        //        // 1 minute, looping every 10 seconds.
-        //        // This should be adjusted to reflect the size of your documents
-        //        maxSpoolingWait = 60000;
-        //        currentSpoolingWait = 0;
-        //        while (currentSpoolingWait < maxSpoolingWait)
-        //        {
-        //            bDocSpooling = documentPrintSession.WaitForJobsSpooling(10000);
-        //            currentSpoolingWait = currentSpoolingWait + 10000;
-        //        }
-        //        // The document did not enter the print queue so we need to cancel this
-        //        // printSession to allow the printer to return to the printer pool.
-        //        if (!bDocSpooling)
-        //        {
-        //            documentPrintSession.Cancel();
-        //        }
-        //        else
-        //        {
-        //            // wait for output file to be created here
-        //            // maximum wait time of 10 minutes, looping every 20 seconds.
-        //            // This should be adjusted to reflect the size of your documents.
-        //            bCompleted = false;
-        //            var maxCompletedWait = 600000;
-        //            currentCompletedWait = 0;
-        //            while (currentCompletedWait < maxCompletedWait)
-        //            {
-        //                bCompleted = documentPrintSession.WaitForJobsSpooling(20000);
-        //                currentCompletedWait = currentCompletedWait + 20000;
-        //            }
-        //            if (!bCompleted)
-        //            {
-        //                documentPrintSession.Cancel();
-        //            }
-        //            else
-        //            {
-        //                // Loop through files collection for this job and
-        //                // upload all created files to the archive system
-        //                IPNJobs pJobList = session.Jobs;
-        //                foreach (IPNJob pJob in pJobList)
-        //                {
-        //                    IPNFiles pFileList = pJob.Files;
-        //                    foreach (IPNFile pFile in pFileList)
-        //                    {
-        //                        UploadToArchive(pFile.Filename);
-        //                        Marshal.FinalReleaseComObject(pFile);
-        //                    }
-        //                    Marshal.FinalReleaseComObject(pFileList);
-        //                    Marshal.FinalReleaseComObject(pJob);
-        //                }
-        //                Marshal.FinalReleaseComObject(pJobList);
-        //            }
-        //        }
-        //        // STEP 3: Release print session
-        //        Marshal.FinalReleaseComObject(documentPrintSession);
-        //        documentPrintSession = null;
-        //        // Make sure Word is done printing
-        //        while (oWordApp.BackgroundPrintingStatus > 0)
-        //        {
-        //            System.Threading.Thread.Sleep(250);
-        //        }
-        //    }
-        //    // Wait for all the jobs to be complete and do cleanup here
-        //    bCompleted = false;
-        //    while (!bCompleted)
-        //    {
-        //        bCompleted = session.WaitForCompletion(120000) );
-        //    }
-        //    oDoc.Close(ref optMissing, ref optMissing, ref optMissing);
-        //    oWordApp.Quit(ref optMissing, ref optMissing, ref optMissing);
-        //    // Clean up word automation objects
-        //    Marshal.FinalReleaseComObject(oDoc);
-        //    Marshal.FinalReleaseComObject(oWordApp);
-        //    // STEP 1: Release IPNSession object
-        //    Marshal.FinalReleaseComObject(session);
-        //    session = null;
-        //}
-
+        public void writeLog(string sMsg, Int32 iType)
+        {
+            string sMsgDate = ""; string sMsgType = ""; string sMessage = "";
+            try
+            {
+                sMsgDate = DateTime.Now.ToString("MM-dd-yyyy HH:mm:ss tt");
+                switch (iType)
+                {
+                    case 0:
+                        sMsgType = "Information "; break;
+                    case 1:
+                        sMsgType = "Warning     "; break;
+                    case 2:
+                        sMsgType = "Error       "; break;
+                    default:
+                        sMsgType = "Invalid Type"; break;
+                }
+                sMessage = sMsgDate + " " + sMsgType + "\t" + " " + sMsg;
+                StreamWriter logWriter;
+                DirectoryInfo dir = new DirectoryInfo(sLogPath);
+                if (!dir.Exists) { dir.Create(); }
+                string logFile = Path.Combine(sLogPath, DateTime.Now.ToString("yyyyMMdd") + ".LOG");
+                if (File.Exists(logFile))
+                {
+                    logWriter = File.AppendText(logFile);
+                }
+                else
+                {
+                    logWriter = File.CreateText(logFile);
+                }
+                logWriter.WriteLine(sMessage);
+                logWriter.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Cannot Write to Log File, Contact Codeone, Error =" + ex.Message, "Error in ImagePrint", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }

@@ -18,7 +18,7 @@ namespace ExceptionSorter
 
     public partial class Form1 : Form
     {
-        static string sFileInputLoc = @"C:\Users\jmatlock\Desktop\input\";
+        static string sFileInputLoc = @"Z:\CodeOne835Exceptions\";
         public int iTifCount, iPdfCount;
         public clsSQL oSQL;
         public clsConfig oConfig;
@@ -184,7 +184,7 @@ namespace ExceptionSorter
                         writeLog("Practice not found. " + sFileNameTif + " moved to " + sPath,1);
                     }
                     FileTifs(tifFile);
-                    Thread.Sleep(20000);
+                    Thread.Sleep(5000);
                 }
             }
             catch (Exception ex)
@@ -211,21 +211,21 @@ namespace ExceptionSorter
                 sFileNameTif = sNewFileName;
                 //sFileNameTif = "C:\\CodeOne\\ImagePrint\\2ccd1993-6733-465a-9d1a-027057fbf0fd_VS3.tif"
 
-                string sUnNumberedshare = "C:\\Users\\jmatlock\\Desktop\\tif_output";
-                //                        string.Format("\\\\{0}", oConfig.sToDir);
-                //     sUnnumberedshare = \\file1\Unnumbered
+                //string sUnNumberedshare = "C:\\Users\\jmatlock\\Desktop\\tif_output";
+                string sUnNumberedshare = string.Format("\\\\{0}", oConfig.sToDir);
+                //Looks like -->     sUnnumberedshare = \\file1\Unnumbered
 
                 string sUnNumberedName = string.Format("{0}\\{1}", sUnNumberedshare, Path.GetFileName(sFileNameTif));
-                //     sUnNumberedName = "\\\\File1\\Unnumbered\\2ccd1993-6733-465a-9d1a-027057fbf0fd_VS3.tif"
+                //Looks like -->     sUnNumberedName = "\\\\File1\\Unnumbered\\2ccd1993-6733-465a-9d1a-027057fbf0fd_VS3.tif"
 
-                //Int32 iRet = oSQL.doInsertTiffReq(sPracticeGuidID, "", sPractice, Path.GetFileName(sFileNameTif));
-                //if (iRet != 0)
-                //{ //if we don't insert tif, dont move file. Unnumbered will loop looking for row.
-                //    writeLog("Error Inserting Tiff Request, Error = " + oSQL.sError, 2);
-                //    File.Delete(sFileNameTif);
-                //    MessageBox.Show("Error Inserting Tif ID into Item Table, Error = " + oSQL.sError, "Error Creating Item Entry", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                //    return; 
-                //}
+                Int32 iRet = oSQL.doInsertTiffReq(sPracticeGuidID, "", sPractice, Path.GetFileName(sFileNameTif));
+                if (iRet != 0)
+                { //if we don't insert tif, dont move file. Unnumbered will loop looking for row.
+                    writeLog("Error Inserting Tiff Request, Error = " + oSQL.sError, 2);
+                    File.Delete(sFileNameTif);
+                    MessageBox.Show("Error Inserting Tif ID into Item Table, Error = " + oSQL.sError, "Error Creating Item Entry", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
                 File.Move(sFileNameTif, sUnNumberedName);
                 writeLog("File Moved Successfully.", 0);

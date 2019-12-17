@@ -41,7 +41,14 @@ namespace ExceptionSorter
             oSQL = new clsSQL(oConfig);
             di = new DirectoryInfo(sFileInputLoc);
 
-            fi = di.GetFiles();
+            fi = di.GetFiles().Where(x=>x.Extension !=".db").ToArray();
+            //foreach (var f in fi)
+            //{
+            //    if (f.Extension==(".db"))
+            //    {
+                    
+            //    }
+            //}
             lWindow.Items.Add("There are " + fi.Count() + " files to sort in " + sFileInputLoc);
             writeLog("******There are " + fi.Count() + " files to sort in " + sFileInputLoc, 0);
             foreach (var s in fi)
@@ -56,7 +63,7 @@ namespace ExceptionSorter
 
         private void bPreviewFileBtn_Click(object sender, EventArgs e)
         {
-            fi = di.GetFiles();
+            fi = di.GetFiles().Where(x => x.Extension != ".db").ToArray(); 
             lWindow.Items.Clear();
             var groups = from f in fi
                          group f by f.Name.Substring(0, 3) into g
